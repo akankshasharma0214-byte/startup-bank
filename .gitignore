@@ -1,0 +1,21 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# App data (local SQLite db, prototype only)
+*.db
+*.db-journal
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+
+# Generated forecast workbooks
+/outputs/

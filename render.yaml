@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: startup-bank
+    runtime: python
+    plan: free
+    buildCommand: "pip install uv && uv sync --frozen"
+    startCommand: "uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: STARTUP_BANK_SECRET
+        generateValue: true
+      # Free-tier disk is ephemeral: the SQLite file resets whenever the instance restarts or
+      # redeploys. Fine for a click-around demo; not for data that must persist. Add a paid
+      # persistent disk (or switch to a hosted Postgres and change DB_PATH's engine URL in
+      # app/db.py) if you need the data to survive restarts.
+      - key: STARTUP_BANK_DB
+        value: /opt/render/project/src/startup_bank.db

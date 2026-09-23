@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>startup-bank</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f6f6f4; --card:#fff; --ink:#1b1b1a; --muted:#6b6b66; --line:#e2e2dd;
+          --accent:#2557d6; --ok:#1a7f4b; --bad:#c62828; --warn:#a96400; --input:#0b3fae; --chip:#eef1fb; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#131311; --card:#1e1e1c; --ink:#ececea; --muted:#9a9a93;
+          --line:#33332e; --accent:#89a9ff; --ok:#57d69a; --bad:#ff7b72; --warn:#e3ab3e; --input:#a9c0ff; --chip:#232a42; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14.5px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  a { color: var(--accent); }
+  .hidden { display: none !important; }
+  h1,h2,h3 { margin: 0 0 8px; }
+  h1 { font-size: 19px; } h2 { font-size: 16px; } h3 { font-size: 13.5px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+  .muted { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .grid-3 { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  input, select, textarea, button { font: inherit; }
+  input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], select, textarea {
+    padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); width: 100%; }
+  label { font-size: 12.5px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .field { min-width: 140px; flex: 1; }
+  button { padding: 7px 14px; border-radius: 6px; border: 1px solid var(--accent); background: var(--accent); color: #fff; cursor: pointer; }
+  @media (prefers-color-scheme: dark) { button { color: #0b1020; } }
+  button.ghost { background: transparent; color: var(--accent); }
+  button.danger { background: transparent; color: var(--bad); border-color: var(--bad); }
+  button.small { padding: 3px 10px; font-size: 12.5px; }
+  button:disabled { opacity: .5; cursor: default; }
+  table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { font-size: 11.5px; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+  td.num, th.num { text-align: right; white-space: nowrap; }
+  .table-wrap { overflow-x: auto; }
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 11.5px; border: 1px solid currentColor; white-space: nowrap; }
+  .ok { color: var(--ok); } .bad { color: var(--bad); } .warn { color: var(--warn); } .chip { background: var(--chip); border: none; color: var(--accent); }
+  .msg { margin-top: 8px; padding: 8px 11px; border-radius: 6px; border: 1px solid var(--line); font-size: 13px; }
+  .msg.bad { border-color: var(--bad); color: var(--bad); } .msg.ok { border-color: var(--ok); color: var(--ok); }
+  header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 16px; }
+  header .row { justify-content: space-between; }
+  nav { display: flex; gap: 4px; flex-wrap: wrap; padding: 8px 16px 0; }
+  nav button { background: transparent; border: 1px solid transparent; color: var(--muted); border-radius: 7px 7px 0 0; }
+  nav button.active { color: var(--accent); border-color: var(--line); border-bottom-color: var(--bg); background: var(--card); }
+  main { max-width: 1080px; margin: 0 auto; padding: 16px; }
+  .kpi { font-size: 26px; font-weight: 600; }
+  .stat-row { display: flex; gap: 14px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 150px; }
+  .bar-row { display: grid; grid-template-columns: 130px 1fr 90px; gap: 8px; align-items: center; margin: 5px 0; font-size: 13px; }
+  .bar-track { background: var(--chip); border-radius: 4px; height: 10px; overflow: hidden; }
+  .bar-fill { background: var(--accent); height: 100%; }
+  #auth-view { max-width: 880px; margin: 40px auto; padding: 0 16px; }
+  .auth-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+  .directory-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+  footer { color: var(--muted); font-size: 12.5px; text-align: center; padding: 24px; }
+</style>
+</head>
+<body>
+
+<section id="auth-view">
+  <h1>startup-bank <span class="badge warn">prototype</span></h1>
+  <p class="muted">All money movement here is simulated (no real bank, no real KYB). Not a real financial product.</p>
+  <div class="auth-tabs">
+    <button id="tab-login" class="chip">Log in</button>
+    <button id="tab-onboard" class="chip">Open an account</button>
+  </div>
+
+  <form id="f-login" class="card col">
+    <h2>Log in</h2>
+    <div class="row">
+      <div class="field"><label>Email</label><input type="email" id="login-email" required></div>
+      <div class="field"><label>Password</label><input type="password" id="login-password" required></div>
+    </div>
+    <div class="row"><button type="submit">Log in</button></div>
+    <div id="m-login"></div>
+  </form>
+
+  <form id="f-onboard" class="card col hidden">
+    <h2>Open a business account</h2>
+    <p class="muted" style="margin-top:-4px">Simulated KYB: instantly approved, no documents needed.</p>
+    <div class="row">
+      <div class="field"><label>Company (DBA) name</label><input type="text" id="ob-name" required></div>
+      <div class="field"><label>Legal name</label><input type="text" id="ob-legal"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Industry</label><input type="text" id="ob-industry"></div>
+      <div class="field"><label>EIN (simulated)</label><input type="text" id="ob-ein" placeholder="00-0000000"></div>
+    </div>
+    <h3 style="margin-top:8px">Admin (you)</h3>
+    <div class="row">
+      <div class="field"><label>Your name</label><input type="text" id="ob-admin-name" required></div>
+      <div class="field"><label>Email</label><input type="email" id="ob-admin-email" required></div>
+      <div class="field"><label>Password</label><input type="password" id="ob-admin-password" minlength="6" required></div>
+    </div>
+    <div class="row">
+      <div class="field" style="max-width:220px"><label>Initial funding (USD, simulated deposit)</label><input type="number" id="ob-funding" min="0" step="100" value="10000"></div>
+    </div>
+    <div class="row"><button type="submit">Open account</button></div>
+    <div id="m-onboard"></div>
+  </form>
+
+  <div class="card" style="margin-top:14px">
+    <h3>Demo companies already onboarded</h3>
+    <div id="directory" class="muted">Loading...</div>
+  </div>
+</section>
+
+<div id="app" class="hidden">
+<header>
+  <div class="row">
+    <div class="row">
+      <strong id="hdr-company"></strong>
+      <span class="badge chip" id="hdr-role"></span>
+    </div>
+    <div class="row">
+      <span class="muted" id="hdr-user"></span>
+      <span class="badge chip" id="hdr-sim-date" title="Simulated today"></span>
+      <button class="ghost small" id="b-advance" title="Advance the simulated clock so pending ACH/wire transfers settle">Advance 1 day</button>
+      <button class="ghost small" id="b-logout">Log out</button>
+    </div>
+  </div>
+</header>
+<nav id="nav"></nav>
+<main>
+  <div id="m-global"></div>
+  <section id="view-overview"></section>
+  <section id="view-accounts" class="hidden"></section>
+  <section id="view-transactions" class="hidden"></section>
+  <section id="view-cards" class="hidden"></section>
+  <section id="view-billpay" class="hidden"></section>
+  <section id="view-invoicing" class="hidden"></section>
+  <section id="view-reports" class="hidden"></section>
+  <section id="view-budget" class="hidden"></section>
+  <section id="view-forecast" class="hidden"></section>
+  <section id="view-team" class="hidden"></section>
+</main>
+<footer>Prototype only. No real bank partner, no real money movement, no investment/banking advice.</footer>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
